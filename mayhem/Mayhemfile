@@ -1,0 +1,7 @@
+image: ghcr.io/mayhemheroes/runc:main
+duration: 300
+project: mayhemheroes/runc
+target: configs-fuzzer
+cmds:
+  - cmd: /out/configs_fuzzer @@
+    env: {}

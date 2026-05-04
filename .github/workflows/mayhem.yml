@@ -36,6 +36,7 @@ jobs:
       uses: docker/build-push-action@v7.1.0
       with:
         context: .
+        file: mayhem/Dockerfile
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
@@ -44,3 +45,7 @@ jobs:
       with:
         mayhem-token: ${{ secrets.MAYHEM_TOKEN }}
         args: --image ${{ steps.meta.outputs.tags }} --duration 300
+        owner: mayhemheroes
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        fail-on-defects: false
+        package: mayhem/

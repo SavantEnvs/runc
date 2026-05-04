@@ -1,23 +1,21 @@
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM golang:1.23 AS builder
 
-RUN for i in 1 2 3 4 5; do \
-      apt-get update --fix-missing && \
-      apt-get install -y --fix-missing pkg-config libseccomp-dev && break || \
-      { echo "Attempt $i failed, retrying..."; sleep 10; }; \
-    done
+RUN apt-get update && apt-get install -y pkg-config libseccomp-dev clang
 
-# Put runc in the GOPATH location compile_go_fuzzer expects
-COPY . $GOPATH/src/github.com/opencontainers/runc
-RUN rm -rf $GOPATH/src/github.com/opencontainers/runc/mayhem
+COPY . /go/src/github.com/opencontainers/runc
+WORKDIR /go/src/github.com/opencontainers/runc
+RUN rm -rf mayhem
 
-WORKDIR $GOPATH/src/github.com/opencontainers/runc
+# Build standalone fuzzer using the existing UnmarshalJSON logic
+COPY mayhem/configs_fuzzer_native.go /tmp/configs_fuzzer_main.go
+RUN mkdir -p /tmp/fuzz && \
+    cp /tmp/configs_fuzzer_main.go /tmp/fuzz/main.go && \
+    cd /tmp/fuzz && \
+    go mod init configs_fuzzer && \
+    go mod edit -replace github.com/opencontainers/runc=/go/src/github.com/opencontainers/runc && \
+    go mod tidy && \
+    go build -o /out/configs_fuzzer .
 
-ENV FUZZING_LANGUAGE=go SANITIZER=address FUZZING_ENGINE=libfuzzer
-
-# Compile libFuzzer engine first (creates /usr/lib/libFuzzingEngine.a)
-RUN compile_libfuzzer
-
-# Install go-fuzz tooling required by compile_go_fuzzer
-RUN go install github.com/dvyukov/go-fuzz/go-fuzz@latest github.com/dvyukov/go-fuzz/go-fuzz-build@latest
-
-RUN compile_go_fuzzer github.com/opencontainers/runc/libcontainer/configs FuzzUnmarshalJSON configs_fuzzer
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y --no-install-recommends libseccomp2
+COPY --from=builder /out/configs_fuzzer /out/configs_fuzzer

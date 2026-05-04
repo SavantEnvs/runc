@@ -6,12 +6,14 @@ RUN for i in 1 2 3 4 5; do \
       { echo "Attempt $i failed, retrying..."; sleep 10; }; \
     done
 
-COPY . runc
-RUN rm -rf runc/mayhem
+# Put runc in the GOPATH location compile_go_fuzzer expects
+COPY . $GOPATH/src/github.com/opencontainers/runc
+RUN rm -rf $GOPATH/src/github.com/opencontainers/runc/mayhem
 
-WORKDIR $SRC/runc
+WORKDIR $GOPATH/src/github.com/opencontainers/runc
 
 ENV FUZZING_LANGUAGE=go SANITIZER=address FUZZING_ENGINE=libfuzzer
+
 # Compile libFuzzer engine first (creates /usr/lib/libFuzzingEngine.a)
 RUN compile_libfuzzer
 

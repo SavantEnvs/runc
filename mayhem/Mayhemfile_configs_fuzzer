@@ -1,0 +1,14 @@
+# runc — libcontainer/configs Hooks.UnmarshalJSON (upstream's //go:build gofuzz harness,
+# the same one OSS-Fuzz builds as `configs_fuzzer`).
+project: savantenvs/runc
+
+# Target name preserved from the original integration (corpus/defect continuity).
+target: configs-fuzzer
+
+cmds:
+  - cmd: /mayhem/configs_fuzzer
+    libfuzzer: true
+
+testsuite:
+  - https://$MAYHEM_DOMAIN/$MAYHEM_PROJECT/$MAYHEM_TARGET/testsuite.tar
+  - file://mayhem/configs-fuzzer/testsuite

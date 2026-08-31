@@ -1,0 +1,15 @@
+# runc — passwd/group parsing (github.com/moby/sys/user FuzzUser). This is the code that
+# used to live in runc's own libcontainer/user and that OSS-Fuzz builds as `user_fuzzer`;
+# upstream moved the package (and its //go:build gofuzz harness) out to moby/sys/user,
+# which runc vendors and still calls for GetExecUser/GetAdditionalGroups.
+project: savantenvs/runc
+
+target: user-fuzzer
+
+cmds:
+  - cmd: /mayhem/user_fuzzer
+    libfuzzer: true
+
+testsuite:
+  - https://$MAYHEM_DOMAIN/$MAYHEM_PROJECT/$MAYHEM_TARGET/testsuite.tar
+  - file://mayhem/user-fuzzer/testsuite

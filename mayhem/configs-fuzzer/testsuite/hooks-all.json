@@ -1,0 +1,1 @@
+{"prestart":[{"path":"/bin/sh","args":["sh","-c","exit 0"],"env":["A=1","B=2"],"timeout":1}],"createRuntime":[{"path":"/bin/true"}],"createContainer":[{"path":"/bin/true","args":[]}],"startContainer":[{"path":"/bin/true","env":[]}],"poststart":[{"path":"/bin/true","timeout":0}],"poststop":[{"path":"/bin/true"}]}
